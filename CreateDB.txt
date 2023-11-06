@@ -1,0 +1,77 @@
+Tabla "Empleados":
+sql
+Copy code
+CREATE TABLE Empleados (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(255) NOT NULL,
+  Rol ENUM('Bartender', 'Cerveceros', 'Cocineros', 'Mozo', 'Socios') NOT NULL
+);
+
+Tabla "Clientes":
+sql
+Copy code
+CREATE TABLE Clientes (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(255) NOT NULL
+);
+
+Tabla "Mesas":
+sql
+Copy code
+CREATE TABLE Mesas (
+  Código VARCHAR(5) PRIMARY KEY,
+  Estado ENUM('con cliente esperando pedido', 'con cliente comiendo', 'con cliente pagando', 'cerrada') NOT NULL
+);
+
+Tabla "Pedidos":
+sql
+Copy code
+CREATE TABLE Pedidos (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  CódigoAlfanumérico VARCHAR(5) NOT NULL,
+  IDCliente INT,
+  IDMesa VARCHAR(5),
+  Estado ENUM('pendiente', 'en preparación', 'listo para servir') NOT NULL,
+  TiempoEstimadoFinalización TIMESTAMP,
+  EmpleadoTomóPedido VARCHAR(255),
+  EmpleadoPreparóPedido VARCHAR(255),
+  EmpleadoSirvióPedido VARCHAR(255),
+  FOREIGN KEY (IDCliente) REFERENCES Clientes(ID),
+  FOREIGN KEY (IDMesa) REFERENCES Mesas(Código)
+);
+
+Tabla "Productos":
+sql
+Copy code
+CREATE TABLE Productos (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(255) NOT NULL,
+  Descripción TEXT,
+  Precio DECIMAL(10, 2) NOT NULL
+);
+
+Tabla "Fotos":
+sql
+Copy code
+CREATE TABLE Fotos (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  IDPedido INT,
+  URLFoto VARCHAR(255) NOT NULL,
+  FOREIGN KEY (IDPedido) REFERENCES Pedidos(ID)
+);
+
+Tabla "Encuestas":
+sql
+Copy code
+CREATE TABLE Encuestas (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  IDMesa VARCHAR(5),
+  PuntuaciónMesa INT CHECK(PuntuaciónMesa >= 1 AND PuntuaciónMesa <= 10),
+  PuntuaciónRestaurante INT CHECK(PuntuaciónRestaurante >= 1 AND PuntuaciónRestaurante <= 10),
+  PuntuaciónMozo INT CHECK(PuntuaciónMozo >= 1 AND PuntuaciónMozo <= 10),
+  PuntuaciónCocinero INT CHECK(PuntuaciónCocinero >= 1 AND PuntuaciónCocinero <= 10),
+  Comentario VARCHAR(66),
+  FOREIGN KEY (IDMesa) REFERENCES Mesas(Código)
+);
+
+php -S localhost:666 -t app
