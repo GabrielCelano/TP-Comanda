@@ -87,4 +87,14 @@ class Usuario
 
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public static function obtenerUsuario($idUsuario)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre, rol, fechaIngreso,  operaciones, suspendido, sector FROM usuarios WHERE id = :idUsuario");
+        $consulta->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+    }
 }

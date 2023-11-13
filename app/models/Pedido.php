@@ -82,10 +82,33 @@ class Pedido{
         $consulta->execute();
     }
 
+    public static function CompletarPedido($idPedido, $idProducto, $cantidad, $estadoProducto, $idEmpleado)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO producto_pedido (idPedido, idProducto, cantidad, estadoProducto, idEmpleado) 
+                                                        VALUES (:idPedido, :idProducto, :cantidad, :estadoProducto, :idEmpleado)");
+        $consulta->bindValue(':idPedido', $idPedido, PDO::PARAM_INT);
+        $consulta->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
+        $consulta->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+        $consulta->bindValue(':estadoProducto', $estadoProducto, PDO::PARAM_STR);
+        $consulta->bindValue(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, codigoMesa, estado, tiempoEstimado, idMozo, foto FROM pedidos");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
+    }
+
+    public static function obtenerPedido($idPedido)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, codigoMesa, estado, tiempoEstimado, idMozo, foto FROM pedidos WHERE id = :idPedido");
+        $consulta->bindParam(':idPedido', $idPedido, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');

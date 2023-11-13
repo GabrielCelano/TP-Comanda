@@ -14,6 +14,7 @@ require_once './controllers/UsuarioController.php';
 require_once './controllers/ProductoController.php';
 require_once './controllers/MesaController.php';
 require_once './controllers/PedidoController.php';
+require_once './middlewares/Logger.php';
 
 // Instantiate App
 $app = AppFactory::create();
@@ -27,10 +28,10 @@ $app->addBodyParsingMiddleware();
 
 // Routes
 $app->get('[/]', function (Request $request, Response $response) {
-    $payload = json_encode(array('method' => 'GET', 'msg' => "Bienvenido a SlimFramework 2023"));
+    $payload = json_encode(array('Mensaje' => "Bienvenido a SlimFramework 2023"));
     $response->getBody()->write($payload);
-    return $response->withHeader('Content-Type', 'application/json');
-});
+    return $response;
+})->add(new Logger());
 
 // Groups
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
@@ -41,6 +42,7 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
 $app->group('/productos', function (RouteCollectorProxy $group) {
     $group->get('[/]', \ProductoController::class . ':TraerTodos');
     $group->post('[/]', \ProductoController::class . ':Cargar');
+    $group->post('/asignarProductos', \ProductoController::class . ':AsignarProductos');
 });
 
 $app->group('/mesas', function (RouteCollectorProxy $group) {
@@ -49,8 +51,9 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 });
 
 $app->group('/pedidos', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \PedidoController::class . ':TraerTodos');
+    $group->get('[/]', \PedidoController::class . ':TraerTodos')->add(new Logger());
     $group->post('[/]', \PedidoController::class . ':Cargar');
+    $group->post('/cargarProductos', \PedidoController::class . ':CargarProductos');
 });
 
 

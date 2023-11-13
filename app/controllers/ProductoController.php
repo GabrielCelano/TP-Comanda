@@ -36,8 +36,21 @@ class ProductoController extends Producto
 
     public function TraerTodos($request, $response, $args)
     {
-        $lista = Producto::obtenerTodos();
+        $lista = Producto::ObtenerTodos();
         $payload = json_encode(array("listaProductos" => $lista));
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function AsignarProductos($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $codigo = $parametros['codigo'];
+        $idEmpleado = $parametros['idEmpleado'];
+
+        $result = Producto::Asignar($codigo, $idEmpleado);
+        $payload = json_encode(array("Producto asignado correctamente" => $result));
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
