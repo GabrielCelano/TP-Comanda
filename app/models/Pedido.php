@@ -91,7 +91,7 @@ class Pedido{
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
     }
 
-    public static function obtenerPedido($idPedido)
+    public static function ObtenerPedido($idPedido)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, codigoMesa, estado, tiempoEstimado, idMozo, foto FROM pedidos WHERE id = :idPedido");
@@ -145,6 +145,19 @@ class Pedido{
                                                         WHERE Codigo = :codigoPedido AND CodigoMesa = :codigoMesa");
         $consulta->bindParam(':codigoPedido', $codigoPedido, PDO::PARAM_STR);
         $consulta->bindParam(':codigoMesa', $codigoMesa, PDO::PARAM_STR);
+        $consulta->execute();
+
+        return $consulta->fetchColumn();
+    }
+
+    public static function Foto($codigoPedido, $foto)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos
+                                                        SET foto = :foto
+                                                        WHERE Codigo = :codigoPedido");
+        $consulta->bindParam(':codigoPedido', $codigoPedido, PDO::PARAM_STR);
+        $consulta->bindParam(':foto', $foto, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchColumn();

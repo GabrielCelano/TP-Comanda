@@ -13,7 +13,6 @@ class PedidoController extends Pedido
             $codigoMesa = $parametros['codigoMesa'];
             $estado = $parametros['estado'];
             $idMozo= $parametros['idMozo'];
-            $foto = $parametros['foto'];
     
             $pedido = new Pedido();
             $pedido->setCodigo($codigo);
@@ -21,8 +20,40 @@ class PedidoController extends Pedido
             $pedido->setEstado($estado);
             $pedido->setTiempoEstimado(0);
             $pedido->setIdMozo($idMozo);
-            $pedido->setFoto($foto);
             $pedido->Alta();
+    
+            $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
+    
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    public function TomarFoto($request, $response, $args)
+    {
+        try {
+            $parametrosBody = $request->getParsedBody();
+            $codigoPedido = $parametrosBody['codigoPedido'];
+
+            $fotos = $request->getUploadedFiles();
+            $ruta = '';
+            $file = '';
+            foreach ($fotos as $foto) {
+                if ($foto instanceof \Psr\Http\Message\UploadedFileInterface) {
+                    $nuevoNombre = $codigoPedido . '.' . pathinfo($foto->getClientFilename(), PATHINFO_EXTENSION);
+                    $ruta = "./pedidos/" . $nuevoNombre;
+                    $file = $foto->getStream()->getMetadata('uri');
+                    break;
+                }
+            }
+            
+            move_uploaded_file($file , $ruta);
+
+            Pedido::Foto($codigoPedido, $ruta);
     
             $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
     

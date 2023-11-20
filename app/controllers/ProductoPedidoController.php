@@ -13,8 +13,8 @@ class ProductoPedidoController extends ProductoPedido
         $idPedido = $parametros['idPedido'];
         $cantidad = $parametros['cantidad'];
         
-        if(count(Producto::obtenerProducto($idProducto)) == 1 &&
-        count(Pedido::obtenerPedido($idPedido)) == 1){
+        if(count(Producto::ObtenerProducto($idProducto)) == 1 &&
+        count(Pedido::ObtenerPedido($idPedido)) == 1){
             ProductoPedido::CompletarPedido($idPedido, $idProducto, $cantidad);
             $payload = json_encode(array("mensaje" => "Se cargaron los productos al pedido."));
         }else{

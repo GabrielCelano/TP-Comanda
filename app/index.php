@@ -35,31 +35,39 @@ $app->addErrorMiddleware(true, true, true);
 // Add parse body
 $app->addBodyParsingMiddleware();
 
+$app->get('/', function (Request $request, Response $response) {
+    $payload = json_encode(array('Mensaje' => "Bienvenido a la Comanda"));
+    $response->getBody()->write($payload);
+    return $response;
+});
+
 // Groups
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \UsuarioController::class . ':TraerTodos')->add(AUTHSOCIO);
-    $group->post('[/]', \UsuarioController::class . ':Cargar')->add(AUTHSOCIO);;
-    $group->get('/exportar', \UsuarioController::class . ':ExportarUsuarios')->add(AUTHSOCIO);
-    $group->post('/importar', \UsuarioController::class . ':ImportarUsuarios')->add(AUTHSOCIO);
-})->add(AUTHTOKEN);
+    $group->get('[/]', \UsuarioController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
+    $group->post('[/]', \UsuarioController::class . ':Cargar');
+    $group->get('/exportar', \UsuarioController::class . ':ExportarUsuarios')->add(AUTHSOCIO)->add(AUTHTOKEN);
+    $group->post('/importar', \UsuarioController::class . ':ImportarUsuarios')->add(AUTHSOCIO)->add(AUTHTOKEN);
+});
 
 $app->group('/productos', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \ProductoController::class . ':TraerTodos')->add(AUTHSOCIO);
+    $group->get('[/]', \ProductoController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
     $group->post('[/]', \ProductoController::class . ':Cargar');
-})->add(AUTHTOKEN);
+});
 
 $app->group('/mesas', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \MesaController::class . ':TraerTodos')->add(AUTHSOCIO);
-    $group->get('/cobrar', \MesaController::class . ':CobrarMesa')->add(AUTHMOZO);
-    $group->get('/cerrar', \MesaController::class . ':CerrarMesa')->add(AUTHSOCIO);
-})->add(AUTHTOKEN);
+    $group->get('[/]', \MesaController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
+    $group->post('[/]', \MesaController::class . ':Cargar');
+    $group->get('/cobrar', \MesaController::class . ':CobrarMesa')->add(AUTHMOZO)->add(AUTHTOKEN);
+    $group->get('/cerrar', \MesaController::class . ':CerrarMesa')->add(AUTHSOCIO)->add(AUTHTOKEN);
+});
 
-$app->group('/pedidos', function (RouteCollectorProxy $group) {
+$app->group('/pedido', function (RouteCollectorProxy $group) {
     $group->get('[/]', \PedidoController::class . ':TraerTodos')->add(AUTHSOCIO);
     $group->post('[/]', \PedidoController::class . ':Cargar')->add(AUTHMOZO);
     $group->post('/cargarProductos', \ProductoPedidoController::class . ':CargarProductos')->add(AUTHMOZO);
     $group->post('/asignarProductos', \ProductoPedidoController::class . ':AsignarProductos')->add(AUTHEMPLEADO);
     $group->post('/finalizarProductos', \ProductoPedidoController::class . ':FinalizarProductos')->add(AUTHEMPLEADO);
+    $group->post('/foto', \PedidoController::class . ':TomarFoto')->add(AUTHMOZO);
     $group->get('/listos', \PedidoController::class . ':Listos')->add(AUTHMOZO);
 })->add(AUTHTOKEN);
 
