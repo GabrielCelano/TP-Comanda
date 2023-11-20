@@ -87,55 +87,13 @@ class Producto
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
     }
 
-    public static function Asignar($codigo, $idEmpleado)
-    {
-        $demora = self::ObtenerTiempoDePreparacion($codigo, $idEmpleado);
-        
-        $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consultaUpdate = $objAccesoDatos->prepararConsulta("UPDATE producto_pedido pp
-                                                                SET estadoProducto = 'en preparacion', tiempoPreparacion = :demora
-                                                                WHERE EXISTS (
-                                                                SELECT 1
-                                                                FROM pedidos p
-                                                                WHERE pp.IdPedido = p.ID AND p.codigo = :codigo AND pp.IdEmpleado = :idEmpleado);");
-        $consultaUpdate->bindParam(':codigo', $codigo, PDO::PARAM_STR);
-        $consultaUpdate->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
-        $consultaUpdate->bindParam(':demora', $demora, PDO::PARAM_INT);
-        $consultaUpdate->execute();
-
-        $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT idPedido, idProducto, cantidad, estadoProducto, idEmpleado, tiempoPreparacion FROM producto_pedido WHERE idEmpleado = :idEmpleado");
-        $consultaSelect->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
-        $consultaSelect->execute();
-
-        return $consultaSelect->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public static function ObtenerTiempoDePreparacion($codigo, $idEmpleado)
+    public static function ObtenerTiempoDePreparacion($idProducto)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT pr.tiempoPreparacion
-                                                            FROM producto_pedido pp
-                                                            JOIN pedidos p ON pp.idPedido = p.id
-                                                            JOIN productos pr ON pp.idProducto = pr.Id
-                                                            WHERE p.codigo = :codigo AND pp.idEmpleado = :idEmpleado;");
-        $consulta->bindParam(':codigo', $codigo, PDO::PARAM_STR);
-        $consulta->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
-        $consulta->execute();
-
-        return $consulta->fetchColumn();
-    }
-
-    public static function AsignarTiempoPreparacionPedido($codigo, $idEmpleado)
-    {
-        $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT pr.tiempoPreparacion
-                                                            FROM producto_pedido pp
-                                                            JOIN pedidos p ON pp.idPedido = p.id
-                                                            JOIN productos pr ON pp.idProducto = pr.Id
-                                                            WHERE p.codigo = :codigo AND pp.idEmpleado = :idEmpleado;");
-        $consulta->bindParam(':codigo', $codigo, PDO::PARAM_STR);
-        $consulta->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT p.tiempoPreparacion
+                                                            FROM productos p
+                                                            WHERE p.ID = :idProducto");
+        $consulta->bindParam(':idProducto', $idProducto, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchColumn();

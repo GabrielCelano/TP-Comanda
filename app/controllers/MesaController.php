@@ -30,9 +30,51 @@ class MesaController extends Mesa
         }
     }
 
+    public function CobrarMesa($request, $response, $args)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+    
+            $codigo = $parametros['codigo'];
+
+            $result = Mesa::Cobrar($codigo);
+    
+            $payload = json_encode(array("Mesa pagando" => $result));
+    
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    public function CerrarMesa($request, $response, $args)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+    
+            $codigo = $parametros['codigo'];
+
+            $result = Mesa::Cerrar($codigo);
+    
+            $payload = json_encode(array("Mesa cerrada" => $result));
+    
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
     public function TraerTodos($request, $response, $args)
     {
-        $lista = Mesa::obtenerTodos();
+        $lista = Mesa::ObtenerTodos();
         $payload = json_encode(array("listaMesas" => $lista));
 
         $response->getBody()->write($payload);

@@ -6,6 +6,7 @@ class Mesa
 {
     public $codigo;
     public $estado;
+    public $importeTotal;
 
     public function setCodigo($codigo) {
         if (preg_match('/^[a-zA-Z0-9]{5}$/', $codigo)) {
@@ -31,6 +32,14 @@ class Mesa
         }
     }
 
+    public function setImporteTotal($importe) {
+        if (is_numeric($importe)) {
+            $this->importeTotal = $importe;
+        } else {
+            throw new PropiedadInvalidaException("Importe total incorrecto.");
+        }
+    }
+
 
     public function Alta()
     {
@@ -41,12 +50,57 @@ class Mesa
         $consulta->execute();
     }
 
-    public static function obtenerTodos()
+    public static function Cobrar($codigo)
+    {
+        $importeTotal = ProductoPedido::ObtenerImporteTotal($codigo);
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consultaUpdate = $objAccesoDatos->prepararConsulta("UPDATE mesas
+                                                        SET Estado = 'cliente pagando',
+                                                            ImporteTotal = :importeTotal
+                                                        WHERE codigo = :codigo");
+        $consultaUpdate->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consultaUpdate->bindValue(':importeTotal', $importeTotal, PDO::PARAM_INT);
+        $consultaUpdate->execute();
+
+        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT codigo, estado, importeTotal FROM mesas WHERE codigo = :codigo");
+        $consultaSelect->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consultaSelect->execute();
+
+        return $consultaSelect->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+    }
+
+    
+    public static function Cerrar($codigo)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, estado FROM mesas");
+        $consultaUpdate = $objAccesoDatos->prepararConsulta("UPDATE mesas
+                                                                SET Estado = 'cerrada'
+                                                                WHERE codigo = :codigo");
+        $consultaUpdate->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consultaUpdate->execute();
+
+        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT codigo, estado, importeTotal FROM mesas WHERE codigo = :codigo");
+        $consultaSelect->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consultaSelect->execute();
+
+        return $consultaSelect->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+    }
+
+    public static function ObtenerTodos()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, estado, importeTotal FROM mesas");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+    }
+
+    public static function ObtenerMesaEstado($codigo){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT CASE WHEN estado = 'cerrada' THEN TRUE ELSE FALSE END AS estado_mesa FROM mesas WHERE codigo = :codigo");
+        $consulta->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consulta->execute();
+        
+        return (bool) $consulta->fetchColumn();
     }
 }

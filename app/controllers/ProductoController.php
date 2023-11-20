@@ -42,17 +42,4 @@ class ProductoController extends Producto
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
-
-    public function AsignarProductos($request, $response, $args)
-    {
-        $parametros = $request->getParsedBody();
-        $codigo = $parametros['codigo'];
-        $idEmpleado = $parametros['idEmpleado'];
-
-        $result = Producto::Asignar($codigo, $idEmpleado);
-        $payload = json_encode(array("Producto asignado correctamente" => $result));
-
-        $response->getBody()->write($payload);
-        return $response->withHeader('Content-Type', 'application/json');
-    }
 }

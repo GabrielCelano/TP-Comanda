@@ -1,7 +1,5 @@
 <?php
 require_once './models/Pedido.php';
-require_once './models/Producto.php';
-require_once './models/Usuario.php';
 require_once './helpers/CodigoHelper.php';
 
 class PedidoController extends Pedido
@@ -14,7 +12,6 @@ class PedidoController extends Pedido
             $codigo = CodigoHelper::generarCodigoUnico();
             $codigoMesa = $parametros['codigoMesa'];
             $estado = $parametros['estado'];
-            $tiempoEstimado = intval($parametros['tiempoEstimado']);
             $idMozo= $parametros['idMozo'];
             $foto = $parametros['foto'];
     
@@ -22,7 +19,7 @@ class PedidoController extends Pedido
             $pedido->setCodigo($codigo);
             $pedido->setCodigoMesa($codigoMesa);
             $pedido->setEstado($estado);
-            $pedido->setTiempoEstimado($tiempoEstimado);
+            $pedido->setTiempoEstimado(0);
             $pedido->setIdMozo($idMozo);
             $pedido->setFoto($foto);
             $pedido->Alta();
@@ -47,23 +44,24 @@ class PedidoController extends Pedido
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function CargarProductos($request, $response, $args){
-        $parametros = $request->getParsedBody();
+    public function Demora($request, $response, $args){
+        $parametros = $request->getQueryParams();
 
-        $idProducto = $parametros['idProducto'];
-        $idPedido = $parametros['idPedido'];
-        $cantidad = $parametros['cantidad'];
-        $estadoProducto = $parametros['estadoProducto'];
-        $idEmpleado = $parametros['idEmpleado'];
+        $codigoMesa = $parametros['codigoMesa'];
+        $codigoPedido = $parametros['codigoPedido'];
         
-        if(count(Producto::obtenerProducto($idProducto)) == 1 &&
-        count(Pedido::obtenerPedido($idPedido)) == 1 &&
-        count(Usuario::obtenerUsuario($idEmpleado)) == 1){
-            Pedido::CompletarPedido($idPedido, $idProducto, $cantidad, $estadoProducto, $idEmpleado);
-        }
+        $result = Pedido::ConsultaCliente($codigoMesa, $codigoPedido);
+        
+        $payload = json_encode(array("Tiempo de demora" => $result));
 
-        $payload = json_encode(array("mensaje" => "Se cargaron los productos al pedido."));
-    
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function Listos($request, $response, $args){
+        $lista = Pedido::ObtenerPedidosListos();
+        $payload = json_encode(array("Pedidos listos a servir" => $lista));
+
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }

@@ -97,4 +97,54 @@ class Usuario
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
     }
+
+    public static function Exportar()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM usuarios");
+        $consulta->execute();
+
+        $timestampBefore = time();
+        $csv_filename = './backups/usuarios_' . $timestampBefore . '.csv';
+        if (file_exists($csv_filename)) {
+            $timestampAfter = time(); // Obtener la marca de tiempo actual
+            $csv_filename = './backups/usuarios_' . $timestampAfter . '.csv';
+        }
+
+        $csv_file = fopen($csv_filename, 'w');
+
+        while ($row = $consulta->fetch(PDO::FETCH_ASSOC)) {
+            fputcsv($csv_file, $row);
+        }
+    
+        fclose($csv_file);
+        return true;
+    }
+
+    public static function Importar($csv_filename)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    
+        if (!file_exists($csv_filename)) {
+            return false;
+        }
+        
+        $csv_file = fopen($csv_filename, 'r');
+    
+        while (($row = fgetcsv($csv_file)) !== false) {
+            $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (Nombre, Rol, FechaIngreso, Operaciones, Suspendido, Sector) VALUES (:1, :2, :3, :4, :5, :6)");
+            
+            $consulta->bindParam(1, $row[1]); // Nombre
+            $consulta->bindParam(2, $row[2]); // Rol
+            $consulta->bindParam(3, $row[3]); // FechaIngreso
+            $consulta->bindParam(4, $row[4]); // Operaciones
+            $consulta->bindParam(5, $row[5]); // Suspendido
+            $consulta->bindParam(6, $row[6]); // Sector
+            
+            $consulta->execute();
+        }
+    
+        fclose($csv_file);
+        return true;
+    }
 }

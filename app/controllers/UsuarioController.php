@@ -43,4 +43,42 @@ class UsuarioController extends Usuario
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function ExportarUsuarios($request, $response, $args)
+    {
+        try {
+        if(Usuario::Exportar()){
+            $payload = json_encode(array("Mensaje" => 'Usuarios exportados exitosamente.'));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+        }catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    public function ImportarUsuarios($request, $response, $args)
+    {
+        try {
+            $archivos = $request->getUploadedFiles();
+            $ruta = null;
+            foreach ($archivos as $archivo) {
+                if ($archivo instanceof \Psr\Http\Message\UploadedFileInterface) {
+                    $ruta = "./backups/" . $archivo->getClientFilename();
+                    break;
+                }
+            }
+            if(Usuario::Importar($ruta)){
+                $payload = json_encode(array("Mensaje" => 'Usuarios importados exitosamente.'));
+                $response->getBody()->write($payload);
+                return $response->withHeader('Content-Type', 'application/json');
+            }
+        }catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
 }
