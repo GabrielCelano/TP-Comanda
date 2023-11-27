@@ -10,16 +10,19 @@ class PedidoController extends Pedido
             $parametros = $request->getParsedBody();
     
             $codigo = CodigoHelper::generarCodigoUnico();
+            $datosToken = $request->getAttribute('datosToken');
+            $nombre = $datosToken->usuario;
+            $rol = $datosToken->rol;
+            $usuario = Usuario::ObtenerUsuario($nombre, $rol);
             $codigoMesa = $parametros['codigoMesa'];
             $estado = $parametros['estado'];
-            $idMozo= $parametros['idMozo'];
     
             $pedido = new Pedido();
             $pedido->setCodigo($codigo);
             $pedido->setCodigoMesa($codigoMesa);
             $pedido->setEstado($estado);
             $pedido->setTiempoEstimado(0);
-            $pedido->setIdMozo($idMozo);
+            $pedido->setIdMozo($usuario[0]->id);
             $pedido->Alta();
     
             $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
@@ -55,7 +58,7 @@ class PedidoController extends Pedido
 
             Pedido::Foto($codigoPedido, $ruta);
     
-            $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
+            $payload = json_encode(array("mensaje" => "Foto tomada con exito."));
     
             $response->getBody()->write($payload);
             return $response->withHeader('Content-Type', 'application/json');

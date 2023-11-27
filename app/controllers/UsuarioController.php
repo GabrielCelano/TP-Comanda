@@ -35,9 +35,66 @@ class UsuarioController extends Usuario
         }
     }
 
+    public function ModificarUsuario($request, $response, $args)
+    {
+        try {
+            $parametros = $request->getParsedBody();
+            $id = $parametros['id'];
+            $nombre = $parametros['nombre'];
+            $rol = $parametros['rol'];
+            $sector = $parametros['sector'];
+            $suspendido = ($parametros['suspendido'] === 'si') ? true : false;
+
+            $usuarios = Usuario::ObtenerUsuarioId($id);
+
+            if(!empty($usuarios)){
+                $usuarios[0]->setNombre($nombre);
+                $usuarios[0]->setRol($rol);
+                $usuarios[0]->setSector($sector);
+                $usuarios[0]->setSuspendido($suspendido);
+                Usuario::Modificar($usuarios[0]);
+                $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
+            }else{
+                $payload = json_encode(array("mensaje" => "El usuario no existe."));
+            }
+    
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
+    public function EliminarUsuario($request, $response, $args)
+    {
+        try {
+            $parametros = $request->getParsedBody();
+            $id = $parametros['id'];
+
+            $usuarios = Usuario::ObtenerUsuarioId($id);
+            if(!empty($usuarios)){
+                Usuario::Eliminar($id);
+                $payload = json_encode(array("mensaje" => "Usuario eliminado con exito"));
+            }else{
+                $payload = json_encode(array("mensaje" => "El usuario no existe."));
+            }
+    
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
+
     public function TraerTodos($request, $response, $args)
     {
-        $lista = Usuario::obtenerTodos();
+        $lista = Usuario::ObtenerTodos();
         $payload = json_encode(array("listaUsuarios" => $lista));
 
         $response->getBody()->write($payload);

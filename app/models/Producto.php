@@ -68,6 +68,29 @@ class Producto
         $consulta->execute();
     }
 
+    public function Eliminar($id)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("DELETE FROM productos WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+
+    public function Modificar($id)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE productos
+                                                        SET nombre = :nombre, tipo = :tipo, precio = :precio, sector = :sector, tiempoPreparacion = :tiempopreparacion
+                                                        WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
+        $consulta->bindValue(':tipo', $this->tipo, PDO::PARAM_STR);
+        $consulta->bindValue(':precio', $this->precio, PDO::PARAM_INT);
+        $consulta->bindValue(':sector', $this->sector, PDO::PARAM_STR);
+        $consulta->bindValue(':tiempopreparacion', $this->tiempoPreparacion, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+
     public static function ObtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();

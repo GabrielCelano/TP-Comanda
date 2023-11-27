@@ -91,11 +91,11 @@ class Pedido{
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
     }
 
-    public static function ObtenerPedido($idPedido)
+    public static function ObtenerPedido($codigo)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, codigoMesa, estado, tiempoEstimado, idMozo, foto FROM pedidos WHERE id = :idPedido");
-        $consulta->bindParam(':idPedido', $idPedido, PDO::PARAM_INT);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo, codigoMesa, estado, tiempoEstimado, idMozo, foto FROM pedidos WHERE codigo = :codigo");
+        $consulta->bindParam(':codigo', $codigo, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
@@ -124,13 +124,13 @@ class Pedido{
                                                                 SET p.tiempoEstimado = (
                                                                     SELECT MAX(pp.tiempoPreparacion) 
                                                                     FROM producto_pedido AS pp 
-                                                                    WHERE pp.idPedido = p.ID
+                                                                    WHERE pp.codigoPedido = p.codigo
                                                                 ),
                                                                 p.estado = :estado
                                                                 WHERE EXISTS (
                                                                     SELECT 1 
                                                                     FROM producto_pedido AS pp 
-                                                                    WHERE pp.idPedido = p.ID AND p.codigo = :codigo
+                                                                    WHERE :codigo = p.codigo
                                                                 );");
         $consultaSelect->bindParam(':estado', $estado, PDO::PARAM_STR);
         $consultaSelect->bindParam(':codigo', $codigo, PDO::PARAM_STR);

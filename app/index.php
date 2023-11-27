@@ -43,23 +43,28 @@ $app->get('/', function (Request $request, Response $response) {
 
 // Groups
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \UsuarioController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
+    $group->get('[/]', \UsuarioController::class . ':TraerTodos')->add(AUTHSOCIO);
     $group->post('[/]', \UsuarioController::class . ':Cargar');
-    $group->get('/exportar', \UsuarioController::class . ':ExportarUsuarios')->add(AUTHSOCIO)->add(AUTHTOKEN);
-    $group->post('/importar', \UsuarioController::class . ':ImportarUsuarios')->add(AUTHSOCIO)->add(AUTHTOKEN);
-});
+    $group->post('/eliminar', \UsuarioController::class . ':EliminarUsuario')->add(AUTHSOCIO);
+    $group->post('/modificar', \UsuarioController::class . ':ModificarUsuario')->add(AUTHSOCIO);
+    $group->get('/exportar', \UsuarioController::class . ':ExportarUsuarios')->add(AUTHSOCIO);
+    $group->post('/importar', \UsuarioController::class . ':ImportarUsuarios')->add(AUTHSOCIO);
+})->add(AUTHTOKEN);
 
 $app->group('/productos', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \ProductoController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
+    $group->get('[/]', \ProductoController::class . ':TraerTodos');
     $group->post('[/]', \ProductoController::class . ':Cargar');
-});
+    $group->post('/modificar', \ProductoController::class . ':ModificarProducto');
+    $group->post('/eliminar', \ProductoController::class . ':EliminarProducto');
+})->add(AUTHTOKEN);
 
 $app->group('/mesas', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \MesaController::class . ':TraerTodos')->add(AUTHSOCIO)->add(AUTHTOKEN);
-    $group->post('[/]', \MesaController::class . ':Cargar');
-    $group->get('/cobrar', \MesaController::class . ':CobrarMesa')->add(AUTHMOZO)->add(AUTHTOKEN);
-    $group->get('/cerrar', \MesaController::class . ':CerrarMesa')->add(AUTHSOCIO)->add(AUTHTOKEN);
-});
+    $group->get('[/]', \MesaController::class . ':TraerTodos')->add(AUTHSOCIO);
+    $group->post('[/]', \MesaController::class . ':Cargar')->add(AUTHMOZO);
+    $group->get('/cobrar', \MesaController::class . ':CobrarMesa')->add(AUTHMOZO);
+    $group->get('/cerrar', \MesaController::class . ':CerrarMesa')->add(AUTHSOCIO); 
+    $group->get('/masUsada', \MesaController::class . ':MesaMasUsada')->add(AUTHSOCIO); 
+})->add(AUTHTOKEN);
 
 $app->group('/pedido', function (RouteCollectorProxy $group) {
     $group->get('[/]', \PedidoController::class . ':TraerTodos')->add(AUTHSOCIO);
@@ -72,8 +77,12 @@ $app->group('/pedido', function (RouteCollectorProxy $group) {
 })->add(AUTHTOKEN);
 
 $app->group('/cliente', function (RouteCollectorProxy $group) {
-    $group->post('/encuesta', \EncuestaController::class . ':CargarEncuesta');
     $group->get('/demora', \PedidoController::class . ':Demora');
+});
+
+$app->group('/encuestas', function (RouteCollectorProxy $group) {
+    $group->get('[/]', \EncuestaController::class . ':ObtenerEncuestas');
+    $group->post('[/]', \EncuestaController::class . ':CargarEncuesta');
 });
 
 // JWT test

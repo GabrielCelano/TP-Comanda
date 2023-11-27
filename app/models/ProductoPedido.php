@@ -6,19 +6,18 @@ require_once './models/Pedido.php';
 
 class ProductoPedido{
 
-    public $idPedido;
+    public $codigoPedido;
     public $idProducto;
     public $cantidad;
     public $estadoProducto;
     public $idEmpleado;
     public $tiempoPreparacion;
 
-    public function setIdPedido($idPedido) {
-        $idPedido = intval($idPedido);
-        if (is_int($idPedido)) {
-            $this->$idPedido = $idPedido;
+    public function setCodigoPedido($codigoPedido) {
+        if (preg_match('/^[a-zA-Z0-9]{5}$/', $codigoPedido)) {
+            $this->codigoPedido = $codigoPedido;
         } else {
-            throw new PropiedadInvalidaException("El ID Pedido no es válido.");
+            throw new PropiedadInvalidaException("El código no es válido.");
         }
     }
 
@@ -74,13 +73,13 @@ class ProductoPedido{
         }
     }
 
-    public static function CompletarPedido($idPedido, $idProducto, $cantidad)
+    public static function CompletarPedido($codigoPedido, $idProducto, $cantidad)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $tiempoPreparacion = Producto::ObtenerTiempoDePreparacion($idProducto);
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO producto_pedido (idPedido, idProducto, cantidad, estadoProducto, tiempoPreparacion) 
-                                                        VALUES (:idPedido, :idProducto, :cantidad, :estadoProducto, :tiempoPreparacion)");
-        $consulta->bindValue(':idPedido', $idPedido, PDO::PARAM_INT);
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO producto_pedido (codigoPedido, idProducto, cantidad, estadoProducto, tiempoPreparacion) 
+                                                        VALUES (:codigoPedido, :idProducto, :cantidad, :estadoProducto, :tiempoPreparacion)");
+        $consulta->bindValue(':codigoPedido', $codigoPedido, PDO::PARAM_STR);
         $consulta->bindValue(':idProducto', $idProducto, PDO::PARAM_INT);
         $consulta->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
         $consulta->bindValue(':estadoProducto', 'pendiente', PDO::PARAM_STR);
@@ -92,7 +91,7 @@ class ProductoPedido{
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consultaUpdate = $objAccesoDatos->prepararConsulta("UPDATE producto_pedido AS pp
-                                                                JOIN pedidos AS p ON pp.idPedido = p.ID
+                                                                JOIN pedidos AS p ON pp.codigoPedido = p.codigo
                                                                 JOIN usuarios AS u ON u.ID = :id
                                                                 JOIN productos AS pr ON pp.idProducto = pr.ID
                                                                 SET pp.idEmpleado = :updateId,
@@ -108,7 +107,7 @@ class ProductoPedido{
         $consultaUpdate->bindParam(':id', $idEmpleado, PDO::PARAM_INT);
         $consultaUpdate->execute();
 
-        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT idPedido, idProducto, cantidad, estadoProducto, idEmpleado, tiempoPreparacion 
+        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT codigoPedido, idProducto, cantidad, estadoProducto, idEmpleado, tiempoPreparacion 
                                                                 FROM producto_pedido WHERE idEmpleado = :idEmpleado");
         $consultaSelect->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
         $consultaSelect->execute();
@@ -120,26 +119,26 @@ class ProductoPedido{
         return $consultaSelect->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function Finalizar($codigo, $idEmpleado)
+    public static function Finalizar($codigoPedido, $idEmpleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consultaUpdate = $objAccesoDatos->prepararConsulta("UPDATE producto_pedido AS pp
-                                                                JOIN pedidos AS p ON pp.idPedido = p.ID
+                                                                JOIN pedidos AS p ON pp.codigoPedido = p.codigo
                                                                 SET pp.estadoProducto = 'listo para servir',
                                                                     pp.tiempoPreparacion = 0
-                                                                WHERE p.codigo = :codigo
-                                                                    AND pp.idEmpleado = :idEmpleado;");
-        $consultaUpdate->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+                                                                WHERE pp.codigoPedido = :codigoPedido
+                                                                AND pp.idEmpleado = :idEmpleado;");
+        $consultaUpdate->bindParam(':codigoPedido', $codigoPedido, PDO::PARAM_STR);
         $consultaUpdate->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
         $consultaUpdate->execute();
 
-        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT idPedido, idProducto, cantidad, estadoProducto, idEmpleado, tiempoPreparacion 
+        $consultaSelect = $objAccesoDatos->prepararConsulta("SELECT codigoPedido, idProducto, cantidad, estadoProducto, idEmpleado, tiempoPreparacion 
                                                                 FROM producto_pedido WHERE idEmpleado = :idEmpleado");
         $consultaSelect->bindParam(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
         $consultaSelect->execute();
 
-        if(self::ComprobarEstado($codigo, 'listo para servir')){
-            Pedido::ModificarEstadoPedido($codigo, 'listo para servir');
+        if(self::ComprobarEstado($codigoPedido, 'listo para servir')){
+            Pedido::ModificarEstadoPedido($codigoPedido, 'listo para servir');
         }
 
         return $consultaSelect->fetchAll(PDO::FETCH_ASSOC);
@@ -150,7 +149,7 @@ class ProductoPedido{
         $consulta = $objAccesoDatos->prepararConsulta("SELECT SUM(p.precio) AS ImporteTotal
                                                         FROM mesas m
                                                         JOIN pedidos pe ON m.Codigo = pe.codigoMesa
-                                                        JOIN producto_pedido pp ON pe.ID = pp.idPedido
+                                                        JOIN producto_pedido pp ON pe.codigo = pp.codigoPedido
                                                         JOIN productos p ON pp.idProducto = p.ID
                                                         WHERE m.Codigo = :codigoMesa;");
         $consulta->bindParam(':codigoMesa', $codigoMesa, PDO::PARAM_STR);  
@@ -167,10 +166,22 @@ class ProductoPedido{
                                                             ELSE 0
                                                         END AS todosEnPreparacion
                                                         FROM producto_pedido pp
-                                                        JOIN pedidos p ON pp.idPedido = p.ID
+                                                        JOIN pedidos p ON pp.codigoPedido = p.codigo
                                                         WHERE p.codigo = :codigo;");
         $consulta->bindParam(':estado', $estado, PDO::PARAM_STR);                                              
         $consulta->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+        $consulta->execute();
+
+        return $consulta->fetchColumn();
+    }
+
+    public static function EmpleadoOcupado($idEmpleado){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT COUNT(*) AS NumPedidosAsociados
+                                                        FROM producto_pedido
+                                                        WHERE IdEmpleado = :id
+                                                        AND estadoProducto = 'en preparacion';");
+        $consulta->bindParam(':id', $idEmpleado, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchColumn();

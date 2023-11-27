@@ -4,6 +4,7 @@ require_once './exceptions/PropiedadInvalidaExcepcion.php';
 
 class Usuario
 {
+    public $id;
     public $nombre;
     public $rol;
     public $fechaIngreso;
@@ -79,7 +80,27 @@ class Usuario
         $consulta->execute();
     }
 
-    public static function obtenerTodos()
+    public static function Modificar($usuario){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE usuarios
+                                                        SET nombre = :nombre, rol = :rol, suspendido = :suspendido, sector = :sector
+                                                        WHERE id = :id");
+        $consulta->bindValue(':id', $usuario->id, PDO::PARAM_INT);
+        $consulta->bindValue(':nombre', $usuario->nombre, PDO::PARAM_STR);
+        $consulta->bindValue(':rol', $usuario->rol, PDO::PARAM_STR);
+        $consulta->bindValue(':suspendido', $usuario->suspendido, PDO::PARAM_BOOL);
+        $consulta->bindValue(':sector', $usuario->sector, PDO::PARAM_STR);
+        $consulta->execute();
+    }
+
+    public static function Eliminar($id){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("DELETE FROM usuarios WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+
+    public static function ObtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, rol, fechaIngreso,  operaciones, suspendido, sector FROM usuarios");
@@ -88,11 +109,26 @@ class Usuario
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function obtenerUsuario($idUsuario)
+    public static function ObtenerUsuarioId($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre, rol, fechaIngreso,  operaciones, suspendido, sector FROM usuarios WHERE id = :idUsuario");
-        $consulta->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, rol, fechaIngreso,  operaciones, suspendido, sector 
+                                                        FROM usuarios 
+                                                        WHERE id = :id");
+        $consulta->bindParam(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+    }
+
+    public static function ObtenerUsuario($nombre, $rol)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, rol, fechaIngreso,  operaciones, suspendido, sector 
+                                                        FROM usuarios 
+                                                        WHERE nombre = :nombre AND rol = :rol");
+        $consulta->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta->bindParam(':rol', $rol, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');

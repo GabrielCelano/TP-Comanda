@@ -80,4 +80,20 @@ class MesaController extends Mesa
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function MesaMasUsada($request, $response, $args)
+    {
+        try {
+            $result = Mesa::MasUsada();
+            $payload = json_encode(array("Mesa mas usada" => $result));
+            
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
 }

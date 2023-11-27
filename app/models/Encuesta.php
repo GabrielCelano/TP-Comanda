@@ -82,4 +82,19 @@ class Encuesta{
         $consulta->execute();
     }
 
+    public static function MejoresComentarios(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT *
+                                                        FROM Encuesta
+                                                        WHERE CodigoMesa IN (
+                                                            SELECT CodigoMesa
+                                                            FROM Encuesta
+                                                            GROUP BY CodigoMesa
+                                                            HAVING AVG((ValoracionMesa + ValoracionRestaurante + ValoracionMozo + ValoracionCocinero) / 4) > 7
+                                                        )");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

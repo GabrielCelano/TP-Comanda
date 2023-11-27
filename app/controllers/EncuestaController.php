@@ -43,4 +43,20 @@ class EncuestaController extends Encuesta
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
     }
+
+    public function ObtenerEncuestas($request, $response, $args)
+    {
+        try {
+            $result = Encuesta::MejoresComentarios();
+            $payload = json_encode(array("Mejores comentarios" => $result));
+            
+            $response->getBody()->write($payload);
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+    }
 }

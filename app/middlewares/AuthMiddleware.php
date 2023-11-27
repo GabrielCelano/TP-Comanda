@@ -55,7 +55,7 @@ class AuthMiddleware
             AutentificadorJWT::VerificarToken($token);
             $data = AutentificadorJWT::ObtenerData($token);
             if($data->rol === 'socio'){
-                $request->datosToken = $data;
+                $request = $request->withAttribute('datosToken', $data);
                 $response = $handler->handle($request);
             }else{
                 throw new Exception();
@@ -77,7 +77,7 @@ class AuthMiddleware
             AutentificadorJWT::VerificarToken($token);
             $data = AutentificadorJWT::ObtenerData($token);
             if($data->rol === 'mozo'){
-                $request->datosToken = $data;
+                $request = $request->withAttribute('datosToken', $data);
                 $response = $handler->handle($request);
             }else{
                 throw new Exception();
@@ -100,7 +100,7 @@ class AuthMiddleware
             AutentificadorJWT::VerificarToken($token);
             $data = AutentificadorJWT::ObtenerData($token);
             if(in_array($data->rol, $roles)){
-                $request->datosToken = $data;
+                $request = $request->withAttribute('datosToken', $data);
                 $response = $handler->handle($request);
             }else{
                 throw new Exception();

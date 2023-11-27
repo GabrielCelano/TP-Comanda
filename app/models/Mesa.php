@@ -103,4 +103,13 @@ class Mesa
         
         return (bool) $consulta->fetchColumn();
     }
+
+    public static function MasUsada(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT CASE WHEN estado = 'cerrada' THEN TRUE ELSE FALSE END AS estado_mesa FROM mesas WHERE codigo = :codigo");
+        $consulta->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+        $consulta->execute();
+        
+        return (bool) $consulta->fetchColumn();
+    }
 }

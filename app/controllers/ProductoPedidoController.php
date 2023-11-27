@@ -10,12 +10,12 @@ class ProductoPedidoController extends ProductoPedido
         $parametros = $request->getParsedBody();
 
         $idProducto = $parametros['idProducto'];
-        $idPedido = $parametros['idPedido'];
+        $codigoPedido = $parametros['codigoPedido'];
         $cantidad = $parametros['cantidad'];
         
         if(count(Producto::ObtenerProducto($idProducto)) == 1 &&
-        count(Pedido::ObtenerPedido($idPedido)) == 1){
-            ProductoPedido::CompletarPedido($idPedido, $idProducto, $cantidad);
+        count(Pedido::ObtenerPedido($codigoPedido)) == 1){
+            ProductoPedido::CompletarPedido($codigoPedido, $idProducto, $cantidad);
             $payload = json_encode(array("mensaje" => "Se cargaron los productos al pedido."));
         }else{
             $payload = json_encode(array("mensaje" => "No se pudieron cargar los productos al pedido."));
@@ -28,12 +28,20 @@ class ProductoPedidoController extends ProductoPedido
     public function AsignarProductos($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
-        $codigo = $parametros['codigo'];
-        $idEmpleado = intval($parametros['idEmpleado']);
+        $datosToken = $request->getAttribute('datosToken');
+        $codigo = $parametros['codigoPedido'];
+        $nombre = $datosToken->usuario;
+        $rol = $datosToken->rol;
 
-        if(count(Usuario::obtenerUsuario($idEmpleado)) == 1){
-            $result = ProductoPedido::Asignar($codigo, $idEmpleado);
-            $payload = json_encode(array("Producto asignado correctamente" => $result));
+        $usuario = Usuario::ObtenerUsuario($nombre, $rol);
+
+        if(!empty($usuario)){
+            if(ProductoPedido::EmpleadoOcupado($usuario[0]->id) == 0){
+                $result = ProductoPedido::Asignar($codigo, $usuario[0]->id);
+                $payload = json_encode(array("Producto asignado correctamente" => $result));
+            }else{
+                $payload = json_encode(array("mensaje" => "El empleado ya esta preparando un pedido, asignar otro."));
+            }
         }else{
             $payload = json_encode(array("mensaje" => "El empleado no existe."));
         }
@@ -45,12 +53,20 @@ class ProductoPedidoController extends ProductoPedido
     public function FinalizarProductos($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
-        $codigo = $parametros['codigo'];
-        $idEmpleado = intval($parametros['idEmpleado']);
+        $datosToken = $request->getAttribute('datosToken');
+        $codigoPedido = $parametros['codigoPedido'];
+        $nombre = $datosToken->usuario;
+        $rol = $datosToken->rol;
+        
+        $usuario = Usuario::ObtenerUsuario($nombre, $rol);
 
-        if(count(Usuario::obtenerUsuario($idEmpleado)) == 1){
-            $result = ProductoPedido::Finalizar($codigo, $idEmpleado);
-            $payload = json_encode(array("Producto listo para servir" => $result));
+        if(!empty($usuario)){
+            if(ProductoPedido::EmpleadoOcupado($usuario[0]->id) != 0){
+                $result = ProductoPedido::Finalizar($codigoPedido, $usuario[0]->id);
+                $payload = json_encode(array("Producto listo para servir" => $result));
+            }else{
+                $payload = json_encode(array("mensaje" => "El empleado no tiene ningun producto asignado."));
+            }
         }else{
             $payload = json_encode(array("mensaje" => "El empleado no existe."));
         }
